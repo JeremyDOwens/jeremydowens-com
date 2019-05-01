@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/sample-app -Dhttp.port=${PORT}
+web: target/universal/stage/bin/untitled -Dhttp.port=${PORT}
