@@ -1,4 +1,4 @@
-@()
+@(lastPost: models.Post)
 
 @main("Jeremy Owens") {
   @header()
@@ -18,22 +18,15 @@
                 <a class="nav-link" href="https://twitter.com/JeremyOwens_">Twitter</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="https://www.facebook.com/jeremy.owens.967">Facebook</a>
+                <a class="nav-link" href="https://www.linkedin.com/in/jeremy-owens-648876b0/">LinkedIn</a>
               </li>
             </ul>
             <hr class="d-sm-none">
           </div>
           <div class="col-sm-8">
-            <h2>About This Site</h2>
-            <h5>02 May 2019</h5>
-
-            <p>After doing some self-evaluation, I realized that despite putting in loads of effort, it can be hard for me to describe my skills and achievements.
-              I haven't done the best job recording my progress, and I don't have a whole lot of experience to reference. In my current job, I spend much of my time
-              developing a web application, so I decided to start a personal project where I can highlight the skills that I have learned on the job while chronicling
-              my ongoing learning experiences. The first project I work on will be fleshing out this web application, turning it from the basic shell that it is now
-              into a usable blogging site. Throughout that time, I will be developing other skills on my own, and for my classes at Syracuse. I hope to paint a good
-              picture of my professional development, and maybe even help some others learn along the way.
-            </p>
+            <h2>@lastPost.title</h2>
+            <h5>@lastPost.date</h5>
+            <p>@lastPost.body</p>
           </div>
         </div>
       </div>
