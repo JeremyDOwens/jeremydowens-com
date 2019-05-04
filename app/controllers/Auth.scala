@@ -103,11 +103,11 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
   )
   //Placeholder
   def login = Action { implicit request =>
-    Ok()
+    Ok("")
   }
   //Placeholder
   def authenticate = Action {implicit request =>
-    Ok()
+    Ok("")
   }
 }
 
