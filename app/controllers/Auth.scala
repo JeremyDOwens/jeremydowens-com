@@ -107,36 +107,48 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
   )
 
   //POST call for requesting an account
-  def createAccount(uname: String, email: String) = Action { implicit request =>
-    val emailtest = email.split("@")
-    if (email.split("@").length != 2)
-      Ok(JsObject(Seq("error" -> JsString("Improper Email")))).as("application/json")
-    else {
-      val verification = new SimpleEmail()
-      val tempPw = Auth.tempPassword(12);
-      verification.setHostName("smtp.gmail.com")
-      verification.setSmtpPort(465)
-      verification.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
-      verification.setSSLOnConnect(true)
-      verification.setFrom(System.getenv("DNR_EMAIL"))
-      verification.setSubject("Your www.jeremydowens.com password.")
-      verification.setMsg("Thank you for setting up an account with www.jeremydowens.com.\n\nYou can sign in with your email address and this password: " + tempPw)
-      verification.addTo(email)
-      verification.send()
-      Await.result(Datasource.db.run(DBIO.seq(
-        Users.users += User(
-          0,
-          uname,
-          BCrypt.hashpw(tempPw, BCrypt.gensalt()),
-          email,
-          "public",
-          Auth.tempPassword(128),
-          new java.sql.Timestamp(new java.util.Date().getTime()),
-          false
-        )
-      )), Duration.Inf)
-      Ok(JsObject(Seq("success" -> JsString("Check your email for your password.")))).as("application/json")
+  /*
+  This needs a lot more error checking, and some serious cleanup
+   */
+  def createAccount = Action { implicit request =>
+    request.body.asJson match {
+      case Some(jsBody) => {
+        val email = (jsBody \ "email").asOpt[String].getOrElse("")
+        val uname = (jsBody \ "uname").asOpt[String].getOrElse("")
+        if (email.split("@").length != 2)
+          Ok(JsObject(Seq("error" -> JsString("Improper Email")))).as("application/json")
+        else if (Await.result(Datasource.db.run(Users.users.filter(_.uname === uname).result.headOption), Duration.Inf).isDefined)
+          Ok(JsObject(Seq("error" -> JsString("Username is taken.")))).as("application/json")
+        else {
+          val verification = new SimpleEmail()
+          val tempPw = Auth.tempPassword(12)
+          verification.setHostName("smtp.gmail.com")
+          verification.setSmtpPort(465)
+          verification.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
+          verification.setSSLOnConnect(true)
+          verification.setFrom(System.getenv("DNR_EMAIL"))
+          verification.setSubject("Your www.jeremydowens.com password.")
+          verification.setMsg("Thank you for setting up an account with www.jeremydowens.com.\n\nYou can sign in with your email address and this password: " + tempPw)
+          verification.addTo(email)
+          verification.send()
+          Await.result(Datasource.db.run(DBIO.seq(
+            Users.users += User(
+              0,
+              uname,
+              BCrypt.hashpw(tempPw, BCrypt.gensalt()),
+              email,
+              "public",
+              Auth.tempPassword(128),
+              new java.sql.Timestamp(new java.util.Date().getTime),
+              active = false
+            )
+          )), Duration.Inf)
+          Ok(JsObject(Seq("success" -> JsString("Check your email for your password.")))).as("application/json")
+        }
+      }
+      case None => Ok(JsObject(Seq("error" -> JsString("No body sent with request.")))).as("application/json")
     }
+
 
   }
   //GET call for serving the login page
