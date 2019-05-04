@@ -1,14 +1,17 @@
 {
     let email = $('#create_acct_email').val();
-    $.ajax({
+    let uname = $('#create_acct_uname').val();
+
+    if (email && uname) $.ajax({
         type: 'POST',
         url: "https://www.jeremydowens.com/createaccount",
         data: JSON.stringify({
-            email
+            email,
+            uname
         }),
         contentType: 'application/json',
         success: s => {
-            if (s.result) $('#resultmessage').text(s.result)
+            if (s.success) $('#resultmessage').text(s.success)
         },
         error: e => {
 

@@ -7,7 +7,11 @@ import org.mindrot.jbcrypt.BCrypt
 import javax.inject._
 import play.api.data.Forms._
 import play.api.i18n.I18nSupport
-
+import play.api.libs.json._
+import slick.jdbc.PostgresProfile.api._
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import org.apache.commons.mail._
 
 trait Secured extends AbstractController {
 
@@ -101,11 +105,45 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
       case (name, password) => Auth.check(name, password)
     })
   )
-  //Placeholder
+
+  //POST call for requesting an account
+  def createAccount(uname: String, email: String) = Action { implicit request =>
+    val emailtest = email.split("@")
+    if (email.split("@").length != 2)
+      Ok(JsObject(Seq("error" -> JsString("Improper Email")))).as("application/json")
+    else {
+      val verification = new SimpleEmail()
+      val tempPw = Auth.tempPassword(12);
+      verification.setHostName("smtp.gmail.com")
+      verification.setSmtpPort(465)
+      verification.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
+      verification.setSSLOnConnect(true)
+      verification.setFrom(System.getenv("DNR_EMAIL"))
+      verification.setSubject("Your www.jeremydowens.com password.")
+      verification.setMsg("Thank you for setting up an account with www.jeremydowens.com.\n\nYou can sign in with your email address and this password: " + tempPw)
+      verification.addTo(email)
+      verification.send()
+      Await.result(Datasource.db.run(DBIO.seq(
+        Users.users += User(
+          0,
+          uname,
+          BCrypt.hashpw(tempPw, BCrypt.gensalt()),
+          email,
+          "public",
+          Auth.tempPassword(128),
+          new java.sql.Timestamp(new java.util.Date().getTime()),
+          false
+        )
+      )), Duration.Inf)
+      Ok(JsObject(Seq("success" -> JsString("Check your email for your password.")))).as("application/json")
+    }
+
+  }
+  //GET call for serving the login page
   def login = Action { implicit request =>
     Ok(views.html.login(loginForm,"Log In Please"))
   }
-  //Placeholder
+  //POST call for sending login credentials
   def authenticate = Action {implicit request =>
     loginForm.bindFromRequest.fold(
       formWithErrors => BadRequest(views.html.login(formWithErrors, "Invalid Username or Password")),
@@ -132,13 +170,13 @@ object Auth {
   //set of characters to be used to generate passwords
   val pwChars: Array[Char] = "ijklmnopqr&^@56789#NOPQRSTUVWABCD!*EFGHIJKLMstuvwxyz01234XYZabcdefgh".toCharArray
 
-  def tempPassword = {
+  def tempPassword(x: Int) = {
 
     val sec = new java.security.SecureRandom()
 
-    //Generate a 12 character array by randomly assigning values from pwChars
+    //Generate a x-length character array by randomly assigning values from pwChars
 
-    Array.fill(12) {
+    Array.fill(x) {
       pwChars(Math.abs(sec.nextInt()) % pwChars.length)
     } mkString("")
   }

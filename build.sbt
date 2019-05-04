@@ -12,6 +12,7 @@ libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1
 libraryDependencies ++= Seq( 
   "com.typesafe.slick" %% "slick" % "3.2.1",
   "org.postgresql" % "postgresql" % "42.1.4",
-  "org.mindrot" % "jbcrypt" % "0.3m"
+  "org.mindrot" % "jbcrypt" % "0.3m",
+  "org.apache.commons" % "commons-email" % "1.3"
 )
 

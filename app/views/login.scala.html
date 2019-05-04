@@ -12,12 +12,15 @@
            @inputPassword(loginForm("password"))
            <button type="submit" class="btn">LOG IN</button>
          }
+         <label for="create_acct_uname">Username</label>
+         <input type="text" id="create_acct_uname">
+         <label for="create_acct_email">Email</label>
          <input type="text" id="create_acct_email">
          <button id="acctcreate" class="btn">Create Account</button>
          <p id="resultmessage"></p>
        </div>
        <div class="col-md-4"></div>
      </div>
-  <script src="@routes.Assets.versioned("/javascripts/adduser.js")"></script>
+  <script src="@routes.Assets.versioned("/javascripts/adduser_v0.01.js")"></script>
   @footer()
 }
