@@ -10,5 +10,5 @@ GET     /                           controllers.HomeController.index
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
 #Auth stuff
-GET     /login                      controllers.Auth.login
-POST    /auth                       controllers.Auth.authenticate
+#GET     /login                      controllers.Auth.login
+#POST    /auth                       controllers.Auth.authenticate
