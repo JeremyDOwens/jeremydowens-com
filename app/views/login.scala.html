@@ -1,0 +1,23 @@
+@(loginForm: Form[(String,String)], intro: String)(implicit messages: Messages)
+@import helper._
+
+@main("Jeremy Owens") {
+  @header()
+     <div class="row">
+       <div class="col-md-4"></div>
+       <div class="col-md-4">
+         <h2>@intro</h2>
+         @form(routes.Auth.authenticate) {
+           @inputText(loginForm("email"))
+           @inputPassword(loginForm("password"))
+           <button type="submit" class="btn">LOG IN</button>
+         }
+         <input type="text" id="create_acct_email">
+         <button id="acctcreate" class="btn">Create Account</button>
+         <p id="resultmessage"></p>
+       </div>
+       <div class="col-md-4"></div>
+     </div>
+  <script src="@routes.Assets.versioned("/javascripts/adduser.js")"></script>
+  @footer()
+}

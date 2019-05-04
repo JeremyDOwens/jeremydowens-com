@@ -103,11 +103,20 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
   )
   //Placeholder
   def login = Action { implicit request =>
-    Ok("")
+    Ok(views.html.login(loginForm,"Log In Please"))
   }
   //Placeholder
   def authenticate = Action {implicit request =>
-    Ok("")
+    loginForm.bindFromRequest.fold(
+      formWithErrors => BadRequest(views.html.login(formWithErrors, "Invalid Username or Password")),
+      user => Redirect(routes.HomeController.index()).withSession("username" -> user._1)
+    )
+  }
+
+  def logout = Action {
+    Redirect(routes.HomeController.index()).withNewSession.flashing(
+      "success" -> "You are now logged out."
+    )
   }
 }
 
