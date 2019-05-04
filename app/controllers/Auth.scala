@@ -16,5 +16,9 @@ trait Secured extends AbstractController {
     "public" -> 9999 //general access level
   )
 
+  def username(request: RequestHeader) = request.session.get("username")
+
+  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.Auth.login())
+
 
 }
