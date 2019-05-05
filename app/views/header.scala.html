@@ -27,7 +27,7 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                 @if(user.isDefined) {
-                  user.uname
+                  @user.uname
                 } else {
                   Guest
                 }
@@ -35,9 +35,9 @@
               </a>
               <ul class="dropdown-menu profile-dropdown">
                 @if(user.isDefined) {
-                  <li><a href="/login">Log In</a></li>
-                } else {
                   <li><a href="/logout">Log Out</a></li>
+                } else {
+                  <li><a href="/login">Log In</a></li>
                 }
               </ul>
             </li>
