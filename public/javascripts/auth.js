@@ -4,7 +4,7 @@
         let email = $('#login_email').val();
         let password = $('#login_password').val();
 
-        if (email && uname) $.ajax({
+        if (email && password) $.ajax({
             type: 'POST',
             url: "https://www.jeremydowens.com/authenticate",
             data: JSON.stringify({
