@@ -2,10 +2,8 @@ package controllers
 
 import play.api.mvc._
 import models._
-import play.api.data._
 import org.mindrot.jbcrypt.BCrypt
 import javax.inject._
-import play.api.data.Forms._
 import play.api.i18n.I18nSupport
 import play.api.libs.json._
 import slick.jdbc.PostgresProfile.api._
