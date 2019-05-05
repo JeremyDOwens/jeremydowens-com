@@ -95,7 +95,7 @@ trait Secured extends AbstractController {
 
 }
 
-class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc) with I18nSupport {
+class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc) with I18nSupport with Secured {
 
   //POST call for requesting an account
   /*
@@ -151,21 +151,16 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
     request.body.asJson match {
       case None => Ok(JsObject(Seq("error" -> JsString("No body sent with request.")))).as("application/json")
       case Some(jsBody) => {
-        val user = Users.findActive((jsBody \ "email").asOpt[String].getOrElse(""))
-        if (user.isDefined) {
-          if (BCrypt.checkpw((jsBody \ "password").asOpt[String].getOrElse(""), user.get.password))
-            Ok(JsObject(Seq("success" -> JsString("You have successfully logged in.")))).as("application/json").withSession("username" -> user.get.uname)
-          else
-            Ok(JsObject(Seq("error" -> JsString("Email and password do not match.")))).as("application/json")
-        } else {
-          Ok(JsObject(Seq("error" -> JsString("No account exists with that email.")))).as("application/json")
-        }
 
+        if (Auth.check((jsBody \ "email").asOpt[String].getOrElse(""), (jsBody \ "password").asOpt[String].getOrElse("")))
+            Ok(JsObject(Seq("success" -> JsString("You have successfully logged in.")))).as("application/json").withSession("username" -> user.get.uname)
+        else
+            Ok(JsObject(Seq("error" -> JsString("Invalid Email or Password.")))).as("application/json")
       }
     }
   }
 
-  def logout = Action {
+  def logout = withUser { user=> implicit request =>
     Redirect(routes.HomeController.index()).withNewSession.flashing(
       "success" -> "You are now logged out."
     )
@@ -173,8 +168,8 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
 }
 
 object Auth {
-  def check(username: String, password: String): Boolean = {
-    Users.findActive(username) match {
+  def check(email: String, password: String): Boolean = {
+    Users.findActive(email) match {
       case None => false
       case Some(user) => BCrypt.checkpw(password, user.password)
     }
