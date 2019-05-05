@@ -50,5 +50,8 @@
         $('#acctcreate').on('click', function() {
             createUser();
         });
+        $('#acctlogin').on('click', function() {
+            authUser();
+        });
     });
 }
