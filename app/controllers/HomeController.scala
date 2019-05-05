@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
  * application's home page.
  */
 @Singleton
-class HomeController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+class HomeController @Inject()(cc: ControllerComponents) extends AbstractController(cc) with Secured {
 
   /**
    * Create an Action to render an HTML page.
@@ -22,10 +22,16 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
    * will be called when the application receives a `GET` request with
    * a path of `/`.
    */
-  def index() = Action { implicit request =>
+  def index() = Action {  implicit request =>
     Await.result(Datasource.db.run(Posts.getMostRecent().result.headOption), Duration.Inf) match {
       case None => BadRequest("This didn't work out how I wanted.")
-      case Some(post) => Ok(views.html.index(post))
+      case Some(post) => {
+        val uname = request.session.get("username")
+        if (uname.isDefined)
+          Ok(views.html.index(post)(Users.findActive(uname.get)))
+        else
+          Ok(views.html.index(post)(None))
+      }
     }
   }
 }

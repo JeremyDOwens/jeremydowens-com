@@ -160,7 +160,7 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
 
   def logout = withUser { user=> implicit request =>
     Redirect(routes.HomeController.index()).withNewSession.flashing(
-      "success" -> "You are now logged out."
+      "success" -> s"You are now logged out, ${user.uname}."
     )
   }
 }
