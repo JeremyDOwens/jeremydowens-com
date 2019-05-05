@@ -11,5 +11,5 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 
 #Auth stuff
 GET     /login                      controllers.Auth.login
-POST    /auth                       controllers.Auth.authenticate
+POST    /authenticate               controllers.Auth.authenticate
 POST    /createaccount              controllers.Auth.createAccount
