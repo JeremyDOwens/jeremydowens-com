@@ -97,15 +97,6 @@ trait Secured extends AbstractController {
 
 class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc) with I18nSupport {
 
-  val loginForm = Form(
-    tuple(
-      "username" -> text,
-      "password" -> text
-    ) verifying ("Invalid email or password", result => result match {
-      case (name, password) => Auth.check(name, password)
-    })
-  )
-
   //POST call for requesting an account
   /*
   This needs a lot more error checking, and some serious cleanup
@@ -153,14 +144,25 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
   }
   //GET call for serving the login page
   def login = Action { implicit request =>
-    Ok(views.html.login(loginForm,"Log In Please"))
+    Ok(views.html.login())
   }
   //POST call for sending login credentials
   def authenticate = Action {implicit request =>
-    loginForm.bindFromRequest.fold(
-      formWithErrors => BadRequest(views.html.login(formWithErrors, "Invalid Username or Password")),
-      user => Redirect(routes.HomeController.index()).withSession("username" -> user._1)
-    )
+    request.body.asJson match {
+      case None => Ok(JsObject(Seq("error" -> JsString("No body sent with request.")))).as("application/json")
+      case Some(jsBody) => {
+        val user = Users.findActive((jsBody \ "email").asOpt[String].getOrElse(""))
+        if (user.isDefined) {
+          if (BCrypt.checkpw((jsBody \ "password").asOpt[String].getOrElse(""), user.get.password))
+            Ok(JsObject(Seq("success" -> JsString("You have successfully logged in.")))).as("application/json").withSession("username" -> user.get.uname)
+          else
+            Ok(JsObject(Seq("error" -> JsString("Email and password do not match.")))).as("application/json")
+        } else {
+          Ok(JsObject(Seq("error" -> JsString("No account exists with that email.")))).as("application/json")
+        }
+
+      }
+    }
   }
 
   def logout = Action {

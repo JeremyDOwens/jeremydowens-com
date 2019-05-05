@@ -1,26 +1,30 @@
-@(loginForm: Form[(String,String)], intro: String)(implicit messages: Messages)
+@()
 @import helper._
 
 @main("Jeremy Owens") {
   @header()
      <div class="row">
-       <div class="col-md-4"></div>
+       <div class="col-md-2"></div>
        <div class="col-md-4">
-         <h2>@intro</h2>
-         @form(routes.Auth.authenticate) {
-           @inputText(loginForm("email"))
-           @inputPassword(loginForm("password"))
-           <button type="submit" class="btn">LOG IN</button>
-         }
+         <h2>Log in with existing account</h2>
+         <label for="create_acct_uname">Email</label>
+         <input type="text" id="login_email"><br />
+         <label for="create_acct_email">Password</label>
+         <input type="text" id="login_password">
+         <button id="acctcreate" class="btn">Log In</button><br />
+         <p id="loginmessage"></p>
+       </div>
+       <div class="col-md-4">
+         <h2>Create a new account</h2>
          <label for="create_acct_uname">Username</label>
-         <input type="text" id="create_acct_uname">
+         <input type="text" id="create_acct_uname"> <br />
          <label for="create_acct_email">Email</label>
          <input type="text" id="create_acct_email">
          <button id="acctcreate" class="btn">Create Account</button>
          <p id="resultmessage"></p>
        </div>
-       <div class="col-md-4"></div>
+       <div class="col-md-2"></div>
      </div>
-  <script src="@routes.Assets.versioned("javascripts/adduser_v0.02.js")"></script>
+  <script src="@routes.Assets.versioned("javascripts/auth_v0.01.js")"></script>
   @footer()
 }
