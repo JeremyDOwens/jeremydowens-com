@@ -153,7 +153,7 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
       case Some(jsBody) => {
 
         if (Auth.check((jsBody \ "email").asOpt[String].getOrElse(""), (jsBody \ "password").asOpt[String].getOrElse("")))
-            Ok(JsObject(Seq("success" -> JsString("You have successfully logged in.")))).as("application/json").withSession("username" -> user.get.uname)
+            Ok(JsObject(Seq("success" -> JsString("You have successfully logged in.")))).as("application/json").withSession("username" -> (jsBody \ "email").as[String])
         else
             Ok(JsObject(Seq("error" -> JsString("Invalid Email or Password.")))).as("application/json")
       }
