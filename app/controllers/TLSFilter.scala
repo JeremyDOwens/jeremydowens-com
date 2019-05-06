@@ -1,4 +1,4 @@
-/*package controllers
+package controllers
 
 import javax.inject._
 import play.api.http.DefaultHttpFilters
@@ -21,5 +21,4 @@ class TLSFilter @Inject() (
 }
 
 class MyFilters @Inject() (tls: TLSFilter) extends DefaultHttpFilters(tls)
-*/
- 
+
