@@ -51,7 +51,9 @@
             createUser();
         });
         $('#acctlogin').on('click', function() {
-            authUser();
+            authUser().then(() => {
+                window.location.replace("/");
+            });
         });
     });
 }
