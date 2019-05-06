@@ -112,7 +112,7 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
         else {
           val verification = new SimpleEmail()
           val tempPw = Auth.tempPassword(12)
-          val activationLink = Auth.tempPassword(128)
+          val activationLink = Auth.tempPassword(32)
           verification.setHostName("smtp.gmail.com")
           verification.setSmtpPort(465)
           verification.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
@@ -143,6 +143,7 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
   }
 
   def activate(code: String) = Action { implicit request =>
+    print(code)
     val query = for {
       u <- Users.users if u.tempLink === code
     } yield u.active
