@@ -142,6 +142,8 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
     }
   }
 
+
+  //GET call to active a user account if they use the 32 char tempLink
   def activate(code: String) = Action { implicit request =>
     val query = for {
       u <- Users.users if u.tempLink === code
@@ -150,6 +152,8 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
     if (result == 1) Ok(views.html.login(None)(Some("Thank you for activating your account. Sign in with your assigned password.")))
     else Ok(views.html.login(None)(Some("We are unable to activate your account at this time.")))
   }
+
+
   //GET call for serving the login page
   def login = Action { implicit request =>
     val uname = request.session.get("username")

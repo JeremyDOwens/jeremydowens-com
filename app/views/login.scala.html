@@ -4,32 +4,41 @@
 
 @main("Jeremy Owens") {
   @header(user)
+     <style>
+          label {
+            display: inline-block;
+            width: 100px;
+          }
+     </style>
+     <div class="row">
+       @if(message.isDefined) {
+         <p>@message</p>
+       }
+     </div>
      <div class="row">
        <div class="col-md-2"></div>
        @if(user.isDefined) {
+         <div class="col-md-4">
          <p>It appears that you are already logged in.
            Please <a href="/logout">log out</a> before attempting to log into a different account,
            or creating a new account.</p>
+         </div>
        } else {
          <div class="col-md-4">
            <h2>Log in with existing account</h2>
            <label for="create_acct_uname">Email</label>
            <input type="text" id="login_email"><br />
            <label for="create_acct_email">Password</label>
-           <input type="password" id="login_password">
+           <input type="password" id="login_password"><br />
            <button id="acctlogin" class="btn">Log In</button><br />
-           <p id="loginmessage">
-             @if(message.isDefined) {
-               @message
-             }
-           </p>
+           <p id="loginmessage"></p>
          </div>
          <div class="col-md-4">
            <h2>Create a new account</h2>
            <label for="create_acct_uname">Username</label>
            <input type="text" id="create_acct_uname"> <br />
            <label for="create_acct_email">Email</label>
-           <input type="text" id="create_acct_email">
+           <input type="text" id="create_acct_email"><br />
            <button id="acctcreate" class="btn">Create Account</button>
            <p id="resultmessage"></p>
          </div>
