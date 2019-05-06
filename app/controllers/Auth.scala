@@ -142,7 +142,11 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
   }
   //GET call for serving the login page
   def login = Action { implicit request =>
-    Ok(views.html.login())
+    val uname = request.session.get("username")
+    if (uname.isDefined)
+      Ok(views.html.login(Users.findActive(uname.get)))
+    else
+      Ok(views.html.login(None))
   }
   //POST call for sending login credentials
   def authenticate = Action {implicit request =>

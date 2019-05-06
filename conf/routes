@@ -13,4 +13,4 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 GET     /login                      controllers.Auth.login
 POST    /authenticate               controllers.Auth.authenticate
 POST    /createaccount              controllers.Auth.createAccount
-GET    /logout                      controllers.Auth.logout
+GET     /logout                     controllers.Auth.logout

@@ -1,13 +1,12 @@
 package controllers
 
 import javax.inject._
-import play.api._
 import play.api.mvc._
 import slick.jdbc.PostgresProfile.api._
 import models._
 import scala.concurrent._
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
+
 /**
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
