@@ -143,12 +143,12 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
   }
 
   def activate(code: String) = Action { implicit request =>
-    print(code)
     val query = for {
       u <- Users.users if u.tempLink === code
     } yield u.active
     val result = Await.result(Datasource.db.run(query.update(true)), Duration.Inf)
-    Ok(views.html.login(None)(Some("Thank you for activating your account." + result)))
+    if (result == 1) Ok(views.html.login(None)(Some("Thank you for activating your account. Sign in with your assigned password.")))
+    else Ok(views.html.login(None)(Some("We are unable to activate your account at this time.")))
   }
   //GET call for serving the login page
   def login = Action { implicit request =>
