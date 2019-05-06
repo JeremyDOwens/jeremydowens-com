@@ -17,6 +17,7 @@ trait Secured extends AbstractController {
   // Assuming there aren't going to be 10,000 different levels
   val userLevels = Map(
     "admin" -> 0, //highest access level
+    "contributor" -> 10,
     //Add more access levels here
     "public" -> 9999 //general access level
   )
@@ -104,20 +105,22 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
       case Some(jsBody) => {
         val email = (jsBody \ "email").asOpt[String].getOrElse("")
         val uname = (jsBody \ "uname").asOpt[String].getOrElse("")
-        if (email.split("@").length != 2)
-          Ok(JsObject(Seq("error" -> JsString("Improper Email")))).as("application/json")
+        if (email.split("@").length != 2 || uname.length < 12)
+          Ok(JsObject(Seq("error" -> JsString("Improper Email or Username")))).as("application/json")
         else if (Await.result(Datasource.db.run(Users.users.filter(_.uname === uname).result.headOption), Duration.Inf).isDefined)
           Ok(JsObject(Seq("error" -> JsString("Username is taken.")))).as("application/json")
         else {
           val verification = new SimpleEmail()
           val tempPw = Auth.tempPassword(12)
+          val activationLink = Auth.tempPassword(128)
           verification.setHostName("smtp.gmail.com")
           verification.setSmtpPort(465)
           verification.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
           verification.setSSLOnConnect(true)
           verification.setFrom(System.getenv("DNR_EMAIL"))
           verification.setSubject("Your www.jeremydowens.com password.")
-          verification.setMsg("Thank you for setting up an account with www.jeremydowens.com.\n\nYou can sign in with your email address and this password: " + tempPw)
+          verification.setMsg("Thank you for setting up an account with www.jeremydowens.com.\n\nYou can sign in with your email address and this password: " + tempPw + "" +
+            "\n\nPlease use the following link to activate your account: https://www.jeremydowens.com/activate/" + activationLink)
           verification.addTo(email)
           verification.send()
           Await.result(Datasource.db.run(DBIO.seq(
@@ -127,7 +130,7 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
               BCrypt.hashpw(tempPw, BCrypt.gensalt()),
               email,
               "public",
-              Auth.tempPassword(128),
+              activationLink,
               new java.sql.Timestamp(new java.util.Date().getTime),
               active = false
             )
@@ -137,16 +140,22 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
       }
       case None => Ok(JsObject(Seq("error" -> JsString("No body sent with request.")))).as("application/json")
     }
+  }
 
-
+  def activate(code: String) = Action { implicit request =>
+    val query = for {
+      u <- Users.users if u.tempLink === code
+    } yield u.active
+    val result = Await.result(Datasource.db.run(query.update(true)), Duration.Inf)
+    Ok(views.html.login(None)(Some("Thank you for activating your account." + result)))
   }
   //GET call for serving the login page
   def login = Action { implicit request =>
     val uname = request.session.get("username")
     if (uname.isDefined)
-      Ok(views.html.login(Users.findActive(uname.get)))
+      Ok(views.html.login(Users.findActive(uname.get))(None))
     else
-      Ok(views.html.login(None))
+      Ok(views.html.login(None)(None))
   }
   //POST call for sending login credentials
   def authenticate = Action {implicit request =>

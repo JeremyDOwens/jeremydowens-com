@@ -14,3 +14,4 @@ GET     /login                      controllers.Auth.login
 POST    /authenticate               controllers.Auth.authenticate
 POST    /createaccount              controllers.Auth.createAccount
 GET     /logout                     controllers.Auth.logout
+GET     /activate/:code             controllers.Auth.activate(code:String)

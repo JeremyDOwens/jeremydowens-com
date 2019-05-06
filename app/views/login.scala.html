@@ -1,4 +1,5 @@
-@(user: Option[models.User])
+@(user: Option[models.User])(message: Option[String])
+
 @import helper._
 
 @main("Jeremy Owens") {
@@ -17,7 +18,11 @@
            <label for="create_acct_email">Password</label>
            <input type="password" id="login_password">
            <button id="acctlogin" class="btn">Log In</button><br />
-           <p id="loginmessage"></p>
+           <p id="loginmessage">
+             @if(message.isDefined) {
+               @message
+             }
+           </p>
          </div>
          <div class="col-md-4">
            <h2>Create a new account</h2>
