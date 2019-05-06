@@ -189,7 +189,7 @@ object Auth {
 
 
   //set of characters to be used to generate passwords
-  val pwChars: Array[Char] = "ijklmnopqr&^@56789#NOPQRSTUVWABCD!*EFGHIJKLMstuvwxyz01234XYZabcdefgh".toCharArray
+  val pwChars: Array[Char] = "ijklmnopqr56789NOPQRS$-_.+!*'(),TUVWABCDEFGHIJKLMstuvwxyz01234XYZabcdefgh".toCharArray
 
   def tempPassword(x: Int) = {
 
