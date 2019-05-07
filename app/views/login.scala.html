@@ -13,21 +13,23 @@
      <div class="row">
        <div class="col-md-2"></div>
        <div class="col-md-8">
-       @if(message.isDefined) {
-         <p>@message</p>
-       }
+         @if(message.isDefined) {
+           <p>@message</p>
+         }
+         @if (user.isDefined) {
+           <p>
+             It appears that you are already logged in.
+             Please <a href="/logout">log out</a> before attempting to log into a different account,
+             or creating a new account.
+           </p>
+           }
+         </div>
        </div>
        <div class="col-md-2"></div>
      </div>
      <div class="row">
        <div class="col-md-2"></div>
-       @if(user.isDefined) {
-         <div class="col-md-4">
-         <p>It appears that you are already logged in.
-           Please <a href="/logout">log out</a> before attempting to log into a different account,
-           or creating a new account.</p>
-         </div>
-       } else {
+       @if(user.isEmpty) {
          <div class="col-md-4">
            <h2>Log in with existing account</h2>
            <label for="create_acct_uname">Email</label>
