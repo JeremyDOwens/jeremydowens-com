@@ -93,36 +93,51 @@ trait Secured extends AbstractController {
 
 
 }
-
-class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc) with I18nSupport with Secured {
-
+import play.api.Configuration
+class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extends AbstractController(cc) with I18nSupport with Secured {
+  //defining constants for generated strings
+  val pwLength = 12
+  val tempLinkLength = 32
   //POST call for requesting an account
-  /*
-  This needs a lot more error checking, and some serious cleanup
-   */
+
   def createAccount = Action { implicit request =>
     request.body.asJson match {
       case Some(jsBody) => {
         val email = (jsBody \ "email").asOpt[String].getOrElse("")
         val uname = (jsBody \ "uname").asOpt[String].getOrElse("")
-        if (email.split("@").length != 2 || uname.length < 12)
-          Ok(JsObject(Seq("error" -> JsString("Improper Email or Username")))).as("application/json")
+        if (email.split("@").length != 2)
+          Ok(JsObject(Seq("error" -> JsString("Improper Email Address")))).as("application/json")
+        else if (uname.length < 12 || 6 > uname.length)
+          Ok(JsObject(Seq("error" -> JsString("Username must be between 6 and 12 characters")))).as("application/json")
         else if (Await.result(Datasource.db.run(Users.users.filter(_.uname === uname).result.headOption), Duration.Inf).isDefined)
           Ok(JsObject(Seq("error" -> JsString("Username is taken.")))).as("application/json")
         else {
-          val verification = new SimpleEmail()
-          val tempPw = Auth.tempPassword(12)
-          val activationLink = Auth.tempPassword(32)
-          verification.setHostName("smtp.gmail.com")
-          verification.setSmtpPort(465)
-          verification.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
-          verification.setSSLOnConnect(true)
-          verification.setFrom(System.getenv("DNR_EMAIL"))
-          verification.setSubject("Your www.jeremydowens.com password.")
-          verification.setMsg("Thank you for setting up an account with www.jeremydowens.com.\n\nYou can sign in with your email address and this password: " + tempPw + "" +
-            "\n\nPlease use the following link to activate your account: https://www.jeremydowens.com/activate/" + activationLink)
-          verification.addTo(email)
-          verification.send()
+          val tempPw = Auth.tempPassword(pwLength)
+          val activationLink = Auth.tempPassword(tempLinkLength)
+          //May factor out email sending into a standalone function in the future
+
+          //attempt to send verification email
+          try {
+
+            val verification = new SimpleEmail()
+            //Using environment variables to store email server and account information
+            verification.setHostName(System.getenv("DNR_MAIL_SERVER"))
+            verification.setSmtpPort(System.getenv("DNR_MAIL_PORT").toInt)
+            verification.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
+            verification.setSSLOnConnect(true)
+            verification.setFrom(System.getenv("DNR_EMAIL"))
+            //Simple email subject and message referencing application.conf for the siteAddress
+            verification.setSubject("Welcome to "+ config.get("siteAddress") + ".")
+            verification.setMsg("Thank you for setting up an account with " + config.get("siteAddress") + "\n\nYou can sign in with your email address and this password: " + tempPw + "" +
+              "\n\nPlease use the following link to activate your account: https://" + config.get("siteAddress") + "/activate/" + activationLink)
+            verification.addTo(email)
+            verification.send()
+          }
+          catch {
+            //If email fails, return an error message
+            case e: EmailException =>
+              Ok(JsObject(Seq("error" -> JsString("Unable to send activation email.")))).as("application/json")
+          }
           Await.result(Datasource.db.run(DBIO.seq(
             Users.users += User(
               0,
@@ -146,8 +161,9 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
   //GET call to active a user account if they use the 32 char tempLink
   def activate(code: String) = Action { implicit request =>
     val query = for {
-      u <- Users.users if u.tempLink === code
+      u <- Users.users if u.tempLink === code  //check if the code matches a user's templink
     } yield u.active
+    //update the users with the templink, to make them active users and return the number of rows affected
     val result = Await.result(Datasource.db.run(query.update(true)), Duration.Inf)
     if (result == 1) Ok(views.html.login(None)(Some("Thank you for activating your account. Sign in with your assigned password.")))
     else Ok(views.html.login(None)(Some("We are unable to activate your account at this time.")))
@@ -167,11 +183,13 @@ class Auth @Inject()(val cc: ControllerComponents) extends AbstractController(cc
     request.body.asJson match {
       case None => Ok(JsObject(Seq("error" -> JsString("No body sent with request.")))).as("application/json")
       case Some(jsBody) => {
-
         if (Auth.check((jsBody \ "email").asOpt[String].getOrElse(""), (jsBody \ "password").asOpt[String].getOrElse("")))
-            Ok(JsObject(Seq("success" -> JsString("You have successfully logged in.")))).as("application/json").withSession("username" -> (jsBody \ "email").as[String])
+            Ok(JsObject(Seq("success" -> JsString("You have successfully logged in."))))
+              .as("application/json")
+              .withSession("username" -> (jsBody \ "email").as[String])
         else
-            Ok(JsObject(Seq("error" -> JsString("Invalid Email or Password.")))).as("application/json")
+            Ok(JsObject(Seq("error" -> JsString("Invalid Email or Password."))))
+              .as("application/json")
       }
     }
   }
