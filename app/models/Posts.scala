@@ -24,6 +24,6 @@ object Posts {
   //SELECT * FROM posts WHERE id = x
   def getById(x: Int) = posts.filter(_.id === x)
 
-  //SELECT * FROM posts ORDER BY date DESC LIMIT 1;
-  def getMostRecent() = posts.sortBy(_.date.desc).take(1)
+  //SELECT * FROM posts ORDER BY date DESC LIMIT x;
+  def getMostRecent(x: Int) = posts.sortBy(_.date.desc).take(x)
 }

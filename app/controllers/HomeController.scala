@@ -22,9 +22,9 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
    * a path of `/`.
    */
   def index() = Action {  implicit request =>
-    Await.result(Datasource.db.run(Posts.getMostRecent().result.headOption), Duration.Inf) match {
-      case None => BadRequest("This didn't work out how I wanted.")
-      case Some(post) => {
+    Await.result(Datasource.db.run(Posts.getMostRecent(3).result), Duration.Inf) match {
+      case Nil => BadRequest("This didn't work out how I wanted.")
+      case post => {
         val uname = request.session.get("username")
         if (uname.isDefined)
           Ok(views.html.index(post)(Users.findActive(uname.get)))

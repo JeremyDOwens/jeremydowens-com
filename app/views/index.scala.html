@@ -1,4 +1,4 @@
-@(lastPost: models.Post)(user: Option[models.User])
+@(posts: Seq[models.Post])(user: Option[models.User])
 
 @main("Jeremy Owens") {
   @header(user)
@@ -24,9 +24,12 @@
             <hr class="d-sm-none">
           </div>
           <div class="col-sm-8">
-            <h2>@lastPost.title</h2>
-            <h5>@lastPost.date</h5>
-            <p>@lastPost.body</p>
+            @for(lastPost <- posts) {
+              <h2>@lastPost.title</h2>
+              <h5>@lastPost.date</h5>
+              <p>@lastPost.body</p>
+              <hr />
+            }
           </div>
         </div>
       </div>
