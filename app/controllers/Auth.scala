@@ -127,9 +127,9 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
             verification.setSSLOnConnect(true)
             verification.setFrom(System.getenv("DNR_EMAIL"))
             //Simple email subject and message referencing application.conf for the siteAddress
-            verification.setSubject("Welcome to "+ config.get("siteAddress") + ".")
-            verification.setMsg("Thank you for setting up an account with " + config.get("siteAddress") + "\n\nYou can sign in with your email address and this password: " + tempPw + "" +
-              "\n\nPlease use the following link to activate your account: https://" + config.get("siteAddress") + "/activate/" + activationLink)
+            verification.setSubject("Welcome to "+ config.underlying.getString("sitevars.siteAddress") + ".")
+            verification.setMsg("Thank you for setting up an account with " + config.underlying.getString("sitevars.siteAddress") + "\n\nYou can sign in with your email address and this password: " + tempPw + "" +
+              "\n\nPlease use the following link to activate your account: https://" + config.underlying.getString("sitevars.siteAddress") + "/activate/" + activationLink)
             verification.addTo(email)
             verification.send()
           }
