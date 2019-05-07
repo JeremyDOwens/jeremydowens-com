@@ -48,10 +48,15 @@
 
     $(document).ready(function() {
         $('#acctcreate').on('click', function() {
-            createUser();
+            $('#spinner').show();
+            createUser().then(() => {
+                $('#spinner').hide();
+            });
         });
         $('#acctlogin').on('click', function() {
+            $('#spinner').show();
             authUser().then(() => {
+                $('#spinner').hide();
                 window.location.replace("/");
             });
         });

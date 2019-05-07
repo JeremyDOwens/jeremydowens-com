@@ -31,21 +31,23 @@
        <div class="col-md-2"></div>
        @if(user.isEmpty) {
          <div class="col-md-4">
-           <h2>Log in with existing account</h2>
+           <h2>Log in</h2>
            <label for="create_acct_uname">Email</label>
            <input type="text" id="login_email"><br />
            <label for="create_acct_email">Password</label>
            <input type="password" id="login_password"><br />
-           <button id="acctlogin" class="btn">Log In</button><br />
+           <button id="acctlogin" class="btn btn-standard">Log In</button>
+           <img src="@routes.Assets.versioned("images/spinner.gif")" id="login_spinner" style="display: none;"><br />
            <p id="loginmessage"></p>
          </div>
-         <div class="col-md-4">
+         < class="col-md-4">
            <h2>Create a new account</h2>
            <label for="create_acct_uname">Username</label>
            <input type="text" id="create_acct_uname"> <br />
            <label for="create_acct_email">Email</label>
            <input type="text" id="create_acct_email"><br />
-           <button id="acctcreate" class="btn">Create Account</button>
+           <button id="acctcreate" class="btn btn-standard">Create Account</button>
+         <img src="@routes.Assets.versioned("images/spinner.gif")" id="create_spinner" style="display: none;"><br />
            <p id="resultmessage"></p>
          </div>
        }
