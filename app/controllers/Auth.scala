@@ -98,6 +98,7 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
   //defining constants for generated strings
   val pwLength = 12
   val tempLinkLength = 32
+  val siteName = config.underlying.getString("sitevars.siteAddress")
   //POST call for requesting an account
 
   def createAccount = Action { implicit request =>
@@ -127,9 +128,8 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
             verification.setSSLOnConnect(true)
             verification.setFrom(System.getenv("DNR_EMAIL"))
             //Simple email subject and message referencing application.conf for the siteAddress
-            verification.setSubject("Welcome to "+ config.underlying.getString("sitevars.siteAddress") + ".")
-            verification.setMsg("Thank you for setting up an account with " + config.underlying.getString("sitevars.siteAddress") + "\n\nYou can sign in with your email address and this password: " + tempPw + "" +
-              "\n\nPlease use the following link to activate your account: https://" + config.underlying.getString("sitevars.siteAddress") + "/activate/" + activationLink)
+            verification.setSubject(s"Welcome to ${siteName}.")
+            verification.setMsg(s"Thank you for setting up an account with ${siteName}\n\nYou can sign in with your email address and this password: ${tempPw}\n\nPlease use the following link to activate your account: https://${siteName}/activate/${activationLink}")
             verification.addTo(email)
             verification.send()
           }
@@ -137,6 +137,8 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
             //If email fails, return an error message
             case e: EmailException =>
               Ok(JsObject(Seq("error" -> JsString("Unable to send activation email.")))).as("application/json")
+            case e: Exception =>
+              Ok(JsObject(Seq("error" -> JsString("Unknown error.")))).as("application/json")
           }
           Await.result(Datasource.db.run(DBIO.seq(
             Users.users += User(
