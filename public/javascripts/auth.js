@@ -48,15 +48,15 @@
 
     $(document).ready(function() {
         $('#acctcreate').on('click', function() {
-            $('#spinner').show();
+            $('#create_spinner').show();
             createUser().then(() => {
-                $('#spinner').hide();
+                $('#create_spinner').hide();
             });
         });
         $('#acctlogin').on('click', function() {
-            $('#spinner').show();
+            $('#login_spinner').show();
             authUser().then(() => {
-                $('#spinner').hide();
+                $('#login_spinner').hide();
                 window.location.replace("/");
             });
         });
