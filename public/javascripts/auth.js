@@ -1,6 +1,6 @@
 
 {
-    authUser = () => new Promise((resolve, reject) => {
+    const authUser = () => new Promise((resolve, reject) => {
         let email = $('#login_email').val();
         let password = $('#login_password').val();
 
@@ -23,7 +23,7 @@
         });
     });
 
-    createUser = () => new Promise((resolve, reject) => {
+    const createUser = () => new Promise((resolve, reject) => {
         let email = $('#create_acct_email').val();
         let uname = $('#create_acct_uname').val();
 
