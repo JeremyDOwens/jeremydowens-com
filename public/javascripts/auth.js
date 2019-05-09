@@ -6,7 +6,7 @@
 
         if (email && password) $.ajax({
             type: 'POST',
-            url: "https://www.jeremydowens.com/authenticate",
+            url: "/authenticate",
             data: JSON.stringify({
                 email,
                 password
@@ -29,7 +29,7 @@
 
         if (email && uname) $.ajax({
             type: 'POST',
-            url: "https://www.jeremydowens.com/createaccount",
+            url: "/createaccount",
             data: JSON.stringify({
                 email,
                 uname
