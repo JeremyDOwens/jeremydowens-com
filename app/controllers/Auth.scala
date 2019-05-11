@@ -264,7 +264,7 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
             str.append(s"Your new password for ${siteName} is: ${tempPw}\n\n")
             str.append(s"You can log in at: https://${siteName}/login \n\n")
             newPwEmail.setMsg(str.toString())
-            newPwEmail.addTo(user.get.uname)
+            newPwEmail.addTo(user.get.email)
             newPwEmail.send()
           }
           catch {
