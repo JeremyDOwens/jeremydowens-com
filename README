@@ -29,3 +29,8 @@ play.filters.hosts {
   # Allow requests to example.com, its subdomains, and localhost:9000.
   allowed = [".jeremydowens.com", "jeremy-d-owens.herokuapp.com"]
 }
+
+3. Set up tables in your database (see app->models for the representations in Slick)
+
+Eventually this will be set to create the tables if they don't exist and automatically adjust the schema using
+evolutions, but that is not in place yet.
