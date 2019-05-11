@@ -167,7 +167,13 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
 
           //attempt to send verification email
           try {
-            val verification = Auth.buildBaseAuthEmail()
+            val verification = new SimpleEmail()
+            //Using environment variables to store email server and account information
+            verification.setHostName(System.getenv("DNR_MAIL_SERVER"))
+            verification.setSmtpPort(System.getenv("DNR_MAIL_PORT").toInt)
+            verification.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
+            verification.setSSLOnConnect(true)
+            verification.setFrom(System.getenv("DNR_EMAIL"))
             //Simple email subject and message referencing application.conf for the siteAddress
             verification.setSubject(s"Welcome to ${siteName}.")
             val sb = new StringBuilder()
@@ -257,13 +263,19 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
           val updateResult = Await.result(Users.updatePw(user.get.id, BCrypt.hashpw(tempPw,BCrypt.gensalt())), Duration. Inf)
           try {
 
-            val newPwEmail = Auth.buildBaseAuthEmail()
+            val newPwEmail = new SimpleEmail()
+            //Using environment variables to store email server and account information
+            newPwEmail.setHostName(System.getenv("DNR_MAIL_SERVER"))
+            newPwEmail.setSmtpPort(System.getenv("DNR_MAIL_PORT").toInt)
+            newPwEmail.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
+            newPwEmail.setSSLOnConnect(true)
+            newPwEmail.setFrom(System.getenv("DNR_EMAIL"))
             //Simple email subject and message referencing application.conf for the siteAddress
-            newPwEmail.setSubject(s"Welcome to ${siteName}.")
+            newPwEmail.setSubject(s"${siteName} recovery password.")
             val str = new StringBuilder()
             str.append(s"Your new password for ${siteName} is: ${tempPw}\n\n")
             str.append(s"You can log in at: https://${siteName}/login \n\n")
-            newPwEmail.setMsg(str.toString())
+            newPwEmail.setMsg(str.mkString)
             newPwEmail.addTo(user.get.email)
             newPwEmail.send()
           }
@@ -294,18 +306,6 @@ object Auth {
     }
   }
 
-  //Setup for SimpleEmail using environment variables for auth-related emails
-  def buildBaseAuthEmail(): SimpleEmail = {
-    def baseEmail = new SimpleEmail()
-    //Using environment variables to store email server and account information
-    baseEmail.setHostName(System.getenv("DNR_MAIL_SERVER"))
-    baseEmail.setSmtpPort(System.getenv("DNR_MAIL_PORT").toInt)
-    baseEmail.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
-    baseEmail.setSSLOnConnect(true)
-    baseEmail.setFrom(System.getenv("DNR_EMAIL"))
-    //explicitly returning
-    return baseEmail
-  }
 
 
   //set of characters to be used to generate passwords
