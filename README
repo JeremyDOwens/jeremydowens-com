@@ -1,0 +1,31 @@
+The foundation of this project is to build a personal portfolio, and professional blogging website. Using the Play!
+Framework.
+
+Fundamentally, this is for my own personal website, but I am striving to ensure that the code is easily adapted for use
+by anyone who would like to operate a similar site. There are some items that are static and built into the twirl
+templates. Over time, I plan to factor that out into configuration and database references. As that happens, the SETUP
+section will be updated.
+
+If you would like to contribute, contact jeremy@jeremydowens.com
+
+SETUP:
+
+1. Declare the following environment variables
+
+APPLICATION_SECRET - this is required for the Play Framework
+DATABASE_URL - this is automatically generated on Heroku, but on other platforms may need to be explicitly declared
+DNR_EMAIL - email address for automated emails
+DNR_MAIL_PORT
+DNR_MAIL_SERVER
+DNR_PASSWORD
+
+2. Change the following fields in application.conf to match your own site
+
+sitevars {
+  siteAddress="www.jeremydowens.com"
+}
+
+play.filters.hosts {
+  # Allow requests to example.com, its subdomains, and localhost:9000.
+  allowed = [".jeremydowens.com", "jeremy-d-owens.herokuapp.com"]
+}

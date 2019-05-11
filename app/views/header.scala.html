@@ -36,6 +36,7 @@
               </a>
               <ul class="dropdown-menu profile-dropdown">
                 @if(user.isDefined) {
+                  <li><a href="/pwchange">Change Password</a></li>
                   <li><a href="/logout">Log Out</a></li>
                 } else {
                   <li><a href="/login">Log In</a></li>
