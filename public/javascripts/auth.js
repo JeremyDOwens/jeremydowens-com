@@ -1,63 +1,140 @@
 
 {
     const authUser = () => new Promise((resolve, reject) => {
-        let email = $('#login_email').val();
-        let password = $('#login_password').val();
+        const email = $('#login_email').val();
+        const password = $('#login_password').val();
 
-        if (email && password) $.ajax({
-            type: 'POST',
-            url: "/authenticate",
-            data: JSON.stringify({
-                email,
-                password
-            }),
-            contentType: 'application/json',
-            success: s => {
-                if (s.success)
-                    $('#loginmessage').text(s.success);
-                resolve(true);
-            },
-            error: e => {
-                reject(false);
-            },
-        });
+        if (email && password) {
+            $.ajax({
+                type: 'POST',
+                url: '/authenticate',
+                data: JSON.stringify({
+                    email,
+                    password,
+                }),
+                contentType: 'application/json',
+                success: (s) => {
+                    if (s.success) { $('#loginmessage').text(s.success); }
+                    if (s.error) { $('#loginmessage').text(`ERROR: ${s.error}`); }
+                    resolve(s);
+                },
+                error: (e) => {
+                    reject(e);
+                },
+            });
+        } else {
+            $('.spinner').hide();
+            $('#loginmessage').text('ERROR: Invalid email or password.');
+            reject(Error('Invalid arguments.'));
+        }
     });
 
     const createUser = () => new Promise((resolve, reject) => {
-        let email = $('#create_acct_email').val();
-        let uname = $('#create_acct_uname').val();
+        const email = $('#create_acct_email').val();
 
-        if (email && uname) $.ajax({
-            type: 'POST',
-            url: "/createaccount",
-            data: JSON.stringify({
-                email,
-                uname
-            }),
-            contentType: 'application/json',
-            success: s => {
-                if (s.success)
-                    $('#resultmessage').text(s.success);
-                resolve(true);
-            },
-            error: e => {
-                reject(false);
-            },
-        });
+        if (email) {
+            $.ajax({
+                type: 'POST',
+                url: '/createaccount',
+                data: JSON.stringify({
+                    email,
+                }),
+                contentType: 'application/json',
+                success: (s) => {
+                    if (s.success) { $('#resultmessage').text(s.success); }
+                    if (s.error) { $('#resultmessage').text(`ERROR: ${s.error}`); }
+                    resolve(s);
+                },
+                error: (e) => {
+                    reject(e);
+                },
+            });
+        } else {
+            $('.spinner').hide();
+            $('#resultmessage').text('ERROR: Invalid email.');
+            reject(Error('Invalid arguments.'));
+        }
     });
 
-    $(document).ready(function() {
-        $('#acctcreate').on('click', function() {
+    const changePassword = () => new Promise((resolve, reject) => {
+        const oldpw = $('#old_password').val();
+        const newpw = $('#new_password').val();
+        if (oldpw && newpw) {
+            $.ajax({
+                type: 'POST',
+                url: '/changepassword',
+                data: JSON.stringify({
+                    oldpw,
+                    newpw,
+                }),
+                contentType: 'application/json',
+                success: (s) => {
+                    if (s.success) $('#changemessage').text(s.success);
+                    else if (s.error) $('#changemessage').text(`ERROR: ${s.error}`);
+                    resolve(s);
+                },
+                error: (e) => {
+                    reject(e);
+                },
+            });
+        } else {
+            $('.spinner').hide();
+            $('#changemessage').text('ERROR: Invalid arguments.');
+            reject(Error('Invalid arguments.'));
+        }
+    });
+
+    const recoverPassword = () => new Promise((resolve, reject) => {
+        const email = $('#recovery_email').val();
+
+        if (email) {
+            $.ajax({
+                type: 'POST',
+                url: '/getnewpassword',
+                data: JSON.stringify({
+                    email,
+                }),
+                contentType: 'application/json',
+                success: (s) => {
+                    if (s.success) $('#recovermessage').text(s.success);
+                    else if (s.error) $('#recovermessage').text(`ERROR: ${s.error}`);
+                    resolve(s);
+                },
+                error: (e) => {
+                    reject(e);
+                },
+            });
+        } else {
+            $('.spinner').hide();
+            $('#recovermessage').text('ERROR: Invalid email.');
+            reject(Error('Invalid arguments.'));
+        }
+    });
+
+    $(document).ready(function () {
+        $('#acctcreate').on('click', function () {
             $('#create_spinner').show();
             createUser().then(() => {
-                $('#create_spinner').hide();
+                $('.spinner').hide();
             });
         });
-        $('#acctlogin').on('click', function() {
+        $('#acctlogin').on('click', function () {
             $('#login_spinner').show();
             authUser().then(() => {
-                $('#login_spinner').hide();
-                window.location.replace("/");
+                $('.spinner').hide();
+                window.location.replace('/');
+            });
+        });
+        $('#get_new_password').on('click', function () {
+            $('#recover_spinner').show();
+            recoverPassword().then(() => {
+                $('.spinner').hide();
+            });
+        });
+        $('#change_password').on('click', function () {
+            $('#change_spinner').show();
+            changePassword().then(() => {
+                $('.spinner').hide();
             });
         });
     });

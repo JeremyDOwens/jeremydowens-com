@@ -1,0 +1,40 @@
+@(user: Option[models.User])(message: Option[String])
+
+@import helper._
+
+@main("Jeremy Owens") {
+  @header(user)
+     <style>
+          label {
+            display: inline-block;
+            width: 100px;
+          }
+     </style>
+  <div class="row">
+    <div class="col-md-4"></div>
+    @if(user.isDefined) {
+      <div class="col-md-4">
+        <h2>Change Password</h2>
+        <label for="old_password">Old Password</label>
+        <input type="password" id="old_password"><br />
+        <label for="new_password">New Password</label>
+        <input type="password" id="new_password"><br />
+        <button id="change_password" class="btn btn-primary">Change Password</button>
+        <img src="@routes.Assets.versioned("images/spinner.gif")" class="spinner" id="change_spinner" style="display: none;"><br />
+        <p id="changemessage"></p>
+      </div>
+    } else {
+      <div class="col-md-4">
+        <h2>Recover Password</h2>
+        <label for="recovery_email">Email Address</label>
+        <input type="text" id="recovery_email"><br />
+        <button id="get_new_password" class="btn btn-primary">Get New Password</button>
+        <img src="@routes.Assets.versioned("images/spinner.gif")" class="spinner" id="recover_spinner" style="display: none;"><br />
+        <p id="recovermessage"></p>
+      </div>
+    }
+    <div class="col-md-4"></div>
+  </div>
+  <script src="@routes.Assets.versioned("javascripts/auth.js")"></script>
+  @footer()
+}

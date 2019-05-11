@@ -10,6 +10,7 @@ import slick.jdbc.PostgresProfile.api._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import org.apache.commons.mail._
+import com.jeremydowens.responseutils.JsonResponses
 
 trait Secured extends AbstractController {
 
@@ -99,19 +100,65 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
   val pwLength = 12
   val tempLinkLength = 32
   val siteName = config.underlying.getString("sitevars.siteAddress")
-  //POST call for requesting an account
 
+  //GET request for page to change passwords
+  def pwChangePage = Action { implicit request =>
+    Ok(views.html.changepass(Users.findActive(request.session.get("username").getOrElse("")))(None))
+  }
+
+  //POST request for changing passwords
+  def changePassword = withUser { user => implicit request =>
+    request.body.asJson match {
+      case Some(jsBody) => {
+        val oldpw = (jsBody \ "oldpw").asOpt[String].getOrElse("")
+        val newpw = (jsBody \ "newpw").asOpt[String].getOrElse("")
+        //Prefer not to have the word password, or variants in a password
+        val pass = "(P|p)(A|a|4)(S|s|\\$)(S|s|\\$)".r
+        //General password quality, 1 lowercase, 1 uppercase, 1 digit, 8-12 chars long
+        val qualCheck = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,12}$".r
+
+        if (pass.findFirstMatchIn(newpw).isDefined){
+          Ok(JsonResponses.error("Password cannot contain the word \"pass\"."))
+            .as("application/json")
+        }
+        else if (qualCheck.findFirstMatchIn(newpw).isEmpty)
+          Ok(JsonResponses.error("Password must be between 8 and 12 characters long, and contain at least one upper case letter, lower case letter, and numeric digit."))
+            .as("application/json")
+        else if (oldpw != "" && newpw != "")
+          if (Auth.check(user.uname, oldpw)){
+            val result = Await.result(Users.updatePw(user.id, BCrypt.hashpw(newpw, BCrypt.gensalt())), Duration.Inf)
+            if (result == 1)
+              Ok(JsonResponses.success("Password has been successfully changed."))
+                .as("application/json")
+            else
+              Ok(JsonResponses.error("Unable to update password. Contact administrator."))
+                .as("application/json")
+          }
+          else
+            Ok(JsonResponses.error("Incorrect old password, please try again."))
+              .as("application/json")
+        else
+          Ok(JsonResponses.error("Invalid entries."))
+            .as("application/json")
+      }
+      case None => Ok(JsonResponses.error("No body sent with request."))
+        .as("application/json")
+    }
+  }
+
+
+  //POST request for requesting an account
   def createAccount = Action { implicit request =>
     request.body.asJson match {
       case Some(jsBody) => {
         val email = (jsBody \ "email").asOpt[String].getOrElse("")
         val uname = (jsBody \ "uname").asOpt[String].getOrElse("")
         if (email.split("@").length != 2)
-          Ok(JsObject(Seq("error" -> JsString("Improper Email Address")))).as("application/json")
+          Ok(JsonResponses.error("Improper Email Address")).as("application/json")
         else if (uname.length < 12 || 6 > uname.length)
-          Ok(JsObject(Seq("error" -> JsString("Username must be between 6 and 12 characters")))).as("application/json")
+          Ok(JsonResponses.error("Username must be between 6 and 12 characters")).as("application/json")
         else if (Await.result(Datasource.db.run(Users.users.filter(_.uname === uname).result.headOption), Duration.Inf).isDefined)
-          Ok(JsObject(Seq("error" -> JsString("Username is taken.")))).as("application/json")
+          Ok(JsonResponses.error("Username is taken.")).as("application/json")
         else {
           val tempPw = Auth.tempPassword(pwLength)
           val activationLink = Auth.tempPassword(tempLinkLength)
@@ -119,26 +166,23 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
 
           //attempt to send verification email
           try {
-
-            val verification = new SimpleEmail()
-            //Using environment variables to store email server and account information
-            verification.setHostName(System.getenv("DNR_MAIL_SERVER"))
-            verification.setSmtpPort(System.getenv("DNR_MAIL_PORT").toInt)
-            verification.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
-            verification.setSSLOnConnect(true)
-            verification.setFrom(System.getenv("DNR_EMAIL"))
+            val verification = Auth.buildBaseAuthEmail()
             //Simple email subject and message referencing application.conf for the siteAddress
             verification.setSubject(s"Welcome to ${siteName}.")
-            verification.setMsg(s"Thank you for setting up an account with ${siteName}\n\nYou can sign in with your email address and this password: ${tempPw}\n\nPlease use the following link to activate your account: https://${siteName}/activate/${activationLink}")
+            val sb = new StringBuilder()
+            sb.append(s"Thank you for setting up an account with ${siteName}\n\n")
+            sb.append(s"You can sign in with your email address and this password: ${tempPw}\n\n")
+            sb.append(s"Please use the following link to activate your account: https://${siteName}/activate/${activationLink}")
+            verification.setMsg(sb.mkString)
             verification.addTo(email)
             verification.send()
           }
           catch {
             //If email fails, return an error message
             case e: EmailException =>
-              Ok(JsObject(Seq("error" -> JsString("Unable to send activation email.")))).as("application/json")
+              Ok(JsonResponses.error("Unable to send activation email.")).as("application/json")
             case e: Exception =>
-              Ok(JsObject(Seq("error" -> JsString("Unknown error.")))).as("application/json")
+              Ok(JsonResponses.error("Unknown error.")).as("application/json")
           }
           Await.result(Datasource.db.run(DBIO.seq(
             Users.users += User(
@@ -152,15 +196,15 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
               active = false
             )
           )), Duration.Inf)
-          Ok(JsObject(Seq("success" -> JsString("Check your email for your password.")))).as("application/json")
+          Ok(JsonResponses.success("Check your email for your password.")).as("application/json")
         }
       }
-      case None => Ok(JsObject(Seq("error" -> JsString("No body sent with request.")))).as("application/json")
+      case None => Ok(JsonResponses.error("No body sent with request.")).as("application/json")
     }
   }
 
 
-  //GET call to active a user account if they use the 32 char tempLink
+  //GET request to active a user account if they use the 32 char tempLink
   def activate(code: String) = Action { implicit request =>
     val query = for {
       u <- Users.users if u.tempLink === code  //check if the code matches a user's templink
@@ -172,7 +216,7 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
   }
 
 
-  //GET call for serving the login page
+  //GET request for serving the login page
   def login = Action { implicit request =>
     val uname = request.session.get("username")
     if (uname.isDefined)
@@ -180,26 +224,64 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
     else
       Ok(views.html.login(None)(None))
   }
-  //POST call for sending login credentials
+  //POST request for sending login credentials
   def authenticate = Action {implicit request =>
     request.body.asJson match {
-      case None => Ok(JsObject(Seq("error" -> JsString("No body sent with request.")))).as("application/json")
-      case Some(jsBody) => {
+      case None => Ok(JsonResponses.error("No body sent with request.")).as("application/json")
+      case Some(jsBody) =>
         if (Auth.check((jsBody \ "email").asOpt[String].getOrElse(""), (jsBody \ "password").asOpt[String].getOrElse("")))
-            Ok(JsObject(Seq("success" -> JsString("You have successfully logged in."))))
+            Ok(JsonResponses.success("You have successfully logged in."))
               .as("application/json")
               .withSession("username" -> (jsBody \ "email").as[String])
         else
-            Ok(JsObject(Seq("error" -> JsString("Invalid Email or Password."))))
+            Ok(JsonResponses.error("Invalid Email or Password."))
               .as("application/json")
-      }
     }
   }
 
+  //GET request for logging out of the site
   def logout = withUser { user=> implicit request =>
     Redirect(routes.HomeController.index()).withNewSession.flashing(
       "success" -> s"You are now logged out, ${user.uname}."
     )
+  }
+  //POST request for getting a new password
+  def getNewPassword = Action { implicit request =>
+    request.body.asJson match {
+      case Some(jsBody) => {
+        val email = (jsBody \ "email").asOpt[String]
+        val user = Users.findActive(email.getOrElse(""))
+        if (user.isDefined) {
+          val tempPw = Auth.tempPassword(pwLength)
+          val updateResult = Await.result(Users.updatePw(user.get.id, BCrypt.hashpw(tempPw,BCrypt.gensalt())), Duration. Inf)
+          try {
+
+            val newPwEmail = Auth.buildBaseAuthEmail()
+            //Simple email subject and message referencing application.conf for the siteAddress
+            newPwEmail.setSubject(s"Welcome to ${siteName}.")
+            val str = new StringBuilder()
+            str.append(s"Your new password for ${siteName} is: ${tempPw}\n\n")
+            str.append(s"You can log in at: https://${siteName}/login \n\n")
+            newPwEmail.setMsg(str.toString())
+            newPwEmail.addTo(user.get.uname)
+            newPwEmail.send()
+          }
+          catch {
+            //If email fails, return an error message
+            case e: EmailException =>
+              Ok(JsonResponses.error("Unable to send activation email.")).as("application/json")
+            case e: Exception =>
+              Ok(JsonResponses.error("Unknown error.")).as("application/json")
+          }
+          if (updateResult == 1) Ok(JsonResponses.success("Check your email for your new password.")).as("application/json")
+          else Ok(JsonResponses.error("Unable to change password.")).as("application/json")
+        } else {
+          Ok(JsonResponses.error("Error validating user. Did you activate the account?")).as("application/json")
+        }
+      }
+      case None =>
+        Ok(JsonResponses.error("No email address supplied.")).as("application/json")
+    }
   }
 }
 
@@ -209,6 +291,18 @@ object Auth {
       case None => false
       case Some(user) => BCrypt.checkpw(password, user.password)
     }
+  }
+
+  //Setup for SimpleEmail using environment variables for auth-related emails
+  def buildBaseAuthEmail(): SimpleEmail = {
+    val baseEmail = new SimpleEmail()
+    //Using environment variables to store email server and account information
+    baseEmail.setHostName(System.getenv("DNR_MAIL_SERVER"))
+    baseEmail.setSmtpPort(System.getenv("DNR_MAIL_PORT").toInt)
+    baseEmail.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
+    baseEmail.setSSLOnConnect(true)
+    baseEmail.setFrom(System.getenv("DNR_EMAIL"))
+    baseEmail
   }
 
 
@@ -223,6 +317,6 @@ object Auth {
 
     Array.fill(x) {
       pwChars(Math.abs(sec.nextInt()) % pwChars.length)
-    } mkString("")
+    } mkString ""
   }
 }

@@ -15,3 +15,6 @@ POST    /authenticate               controllers.Auth.authenticate
 POST    /createaccount              controllers.Auth.createAccount
 GET     /logout                     controllers.Auth.logout
 GET     /activate/:code             controllers.Auth.activate(code:String)
+GET     /pwChange                   controllers.Auth.pwChangePage
+POST    /getnewpassword             controllers.Auth.getNewPassword
+POST    /changepassword             controllers.Auth.changePassword
