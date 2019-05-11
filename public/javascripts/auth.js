@@ -31,13 +31,14 @@
 
     const createUser = () => new Promise((resolve, reject) => {
         const email = $('#create_acct_email').val();
-
-        if (email) {
+        const uname = $('#create_acct_uname').val()
+        if (email && uname) {
             $.ajax({
                 type: 'POST',
                 url: '/createaccount',
                 data: JSON.stringify({
                     email,
+                    uname
                 }),
                 contentType: 'application/json',
                 success: (s) => {

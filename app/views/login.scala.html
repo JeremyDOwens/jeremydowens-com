@@ -37,7 +37,7 @@
            <label for="create_acct_email">Password</label>
            <input type="password" id="login_password"><br />
            <button id="acctlogin" class="btn btn-standard">Log In</button>
-           <img src="@routes.Assets.versioned("images/spinner.gif")" id="login_spinner" style="display: none;"><br />
+           <img src="@routes.Assets.versioned("images/spinner.gif")" id="login_spinner" class="spinner"  style="display: none;"><br />
            <p id="loginmessage"></p>
          </div>
          <div class="col-md-4">
@@ -47,7 +47,7 @@
            <label for="create_acct_email">Email</label>
            <input type="text" id="create_acct_email"><br />
            <button id="acctcreate" class="btn btn-standard">Create Account</button>
-         <img src="@routes.Assets.versioned("images/spinner.gif")" id="create_spinner" style="display: none;"><br />
+         <img src="@routes.Assets.versioned("images/spinner.gif")" id="create_spinner" class="spinner" style="display: none;"><br />
            <p id="resultmessage"></p>
            <p><a href="/pwChange">Forgot Password?</a></p>
          </div>
