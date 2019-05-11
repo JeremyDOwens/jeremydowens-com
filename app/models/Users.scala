@@ -30,7 +30,7 @@ class Users(tag: Tag) extends Table[User](tag, "users") {
 
 object Users {
   val users = TableQuery[Users]
-
+  
   def findActive(email: String): Option[User] =
     Await.result(Datasource.db.run(users.filter(_.active === true).filter(_.email === email).result.headOption), Duration.Inf)
 

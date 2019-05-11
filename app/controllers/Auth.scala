@@ -125,7 +125,7 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
           Ok(JsonResponses.error("Password must be between 8 and 12 characters long, and contain at least one upper case letter, lower case letter, and numeric digit."))
             .as("application/json")
         else if (oldpw != "" && newpw != "")
-          if (Auth.check(user.uname, oldpw)){
+          if (Auth.check(user.email, oldpw)){
             //Only store passwords hashed and salted
             val result = Await.result(Users.updatePw(user.id, BCrypt.hashpw(newpw, BCrypt.gensalt())), Duration.Inf)
             if (result == 1) //number of rows altered should be 1
