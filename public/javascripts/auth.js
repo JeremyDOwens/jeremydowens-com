@@ -14,8 +14,15 @@
                 }),
                 contentType: 'application/json',
                 success: (s) => {
-                    if (s.success) { $('#loginmessage').text(s.success); }
-                    if (s.error) { $('#loginmessage').text(`ERROR: ${s.error}`); }
+                    if (s.success) {
+                        $('#loginmessage').text(s.success);
+                        $('.spinner').hide();
+                        window.location.replace('/');
+                    }
+                    if (s.error) {
+                        $('#loginmessage').text(`ERROR: ${s.error}`);
+                        $('.spinner').hide();
+                    }
                     resolve(s);
                 },
                 error: (e) => {
@@ -123,7 +130,6 @@
             $('#login_spinner').show();
             authUser().then(() => {
                 $('.spinner').hide();
-                window.location.replace('/');
             });
         });
         $('#get_new_password').on('click', function () {
