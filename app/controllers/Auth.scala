@@ -126,8 +126,9 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
             .as("application/json")
         else if (oldpw != "" && newpw != "")
           if (Auth.check(user.uname, oldpw)){
+            //Only store passwords hashed and salted
             val result = Await.result(Users.updatePw(user.id, BCrypt.hashpw(newpw, BCrypt.gensalt())), Duration.Inf)
-            if (result == 1)
+            if (result == 1) //number of rows altered should be 1
               Ok(JsonResponses.success("Password has been successfully changed."))
                 .as("application/json")
             else
@@ -295,14 +296,15 @@ object Auth {
 
   //Setup for SimpleEmail using environment variables for auth-related emails
   def buildBaseAuthEmail(): SimpleEmail = {
-    val baseEmail = new SimpleEmail()
+    def baseEmail = new SimpleEmail()
     //Using environment variables to store email server and account information
     baseEmail.setHostName(System.getenv("DNR_MAIL_SERVER"))
     baseEmail.setSmtpPort(System.getenv("DNR_MAIL_PORT").toInt)
     baseEmail.setAuthenticator(new DefaultAuthenticator(System.getenv("DNR_EMAIL"), System.getenv("DNR_PASSWORD")))
     baseEmail.setSSLOnConnect(true)
     baseEmail.setFrom(System.getenv("DNR_EMAIL"))
-    baseEmail
+    //explicitly returning
+    return baseEmail
   }
 
 
