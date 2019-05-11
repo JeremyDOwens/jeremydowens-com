@@ -1,7 +1,7 @@
-The foundation of this project is to build a personal portfolio, and professional blogging website. Using the Play!
+The aim of this project is to build a personal portfolio and professional blogging website using the Play!
 Framework.
 
-Fundamentally, this is for my own personal website, but I am striving to ensure that the code is easily adapted for use
+This is for my own personal website, but I am striving to ensure that the code is easily adapted for use
 by anyone who would like to operate a similar site. There are some items that are static and built into the twirl
 templates. Over time, I plan to factor that out into configuration and database references. As that happens, the SETUP
 section will be updated.
