@@ -3,7 +3,8 @@ package models
 import slick.jdbc.PostgresProfile.api._
 
 //Define a case class (Struct) data type for the return values of table queries
-case class Project(id: Int, title: String, date: java.sql.Timestamp, section: Int, body: String)
+case class Project(id: Int, title: String, git: String, description: String)
+case class ProjectTag(id: Int, pID: Int, pTag: String)
 //Define the table within the database, and map it to the case class
 class Projects(tag: Tag) extends Table[Project](tag, "projects") {
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc) //Serial column
@@ -12,6 +13,15 @@ class Projects(tag: Tag) extends Table[Project](tag, "projects") {
   def description = column[String]("description")
 
   def * = (id, title, git, description) <> (Project.tupled, Project.unapply)
+}
+
+class ProjectTags extends Table[ProjectTag](tag, "projecttags") {
+  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+  def pID = column[Int]("pid")
+  def pTag = column[String]("tag")
+
+
+  def * = (id, pID, pTag) <> (ProjectTag.tupled, ProjectTag.unapply)
 }
 
 /*
