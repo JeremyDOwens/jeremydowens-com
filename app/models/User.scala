@@ -14,7 +14,7 @@ case class User(
                  linkDate: java.sql.Timestamp,
                  active: Boolean
                )
-class Users(tag: Tag) extends Table[User](tag, "users") {
+class Users(tag: Tag) extends Table[User](tag, "site_user") {
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc) //Serial column
   def uname = column[String]("uname")
   def password = column[String]("password")
