@@ -199,7 +199,6 @@ class Auth @Inject()(val cc: ControllerComponents, config: Configuration) extend
               email,
               "public",
               activationLink,
-              new java.sql.Timestamp(new java.util.Date().getTime),
               active = false
             )
           )), Duration.Inf)

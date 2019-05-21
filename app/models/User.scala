@@ -11,7 +11,6 @@ case class User(
                  email: String,
                  role: String,
                  tempLink: String,
-                 linkDate: java.sql.Timestamp,
                  active: Boolean
                )
 class Users(tag: Tag) extends Table[User](tag, "site_user") {
@@ -21,11 +20,10 @@ class Users(tag: Tag) extends Table[User](tag, "site_user") {
   def email = column[String]("email")
   def role = column[String]("role")
   def tempLink = column[String]("templink")
-  def linkDate = column[java.sql.Timestamp]("linkdate")
   def active = column[Boolean]("active")
 
 
-  def * = (id, uname, password, email, role, tempLink, linkDate, active) <> (User.tupled, User.unapply)
+  def * = (id, uname, password, email, role, tempLink, active) <> (User.tupled, User.unapply)
 }
 
 object Users {
