@@ -34,3 +34,17 @@ play.filters.hosts {
 
 Eventually this will be set to create the tables if they don't exist and automatically adjust the schema using
 evolutions, but that is not in place yet.
+
+Currently, these queries should set up the tables properly
+
+CREATE TABLE site_user (id SERIAL PRIMARY KEY NOT NULL, uname varchar(255) UNIQUE NOT NULL, email varchar(255) UNIQUE NOT NULL, role varchar(255) NOT NULL, templink varchar(255) NOT NULL, password varchar(255) NOT NULL, active boolean NOT NULL DEFAULT false);
+
+CREATE TABLE project (id SERIAL PRIMARY KEY NOT NULL, title varchar(255) NOT NULL, git varchar(255) DEFAULT 'n/a', owner int NOT NULL REFERENCES site_user(id), description text);
+
+CREATE TABLE post (id SERIAL PRIMARY KEY NOT NULL, title varchar(255) NOT NULL, date timestamp NOT NULL, body text, project int NOT NULL REFERENCES project(id), author int NOT NULL REFERENCES site_user(id));
+
+CREATE TABLE tag (id SERIAL PRIMARY KEY NOT NULL, name varchar(255) UNIQUE NOT NULL, description text);
+
+CREATE TABLE project_tag (project int NOT NULL REFERENCES project(id), tag int NOT NULL REFERENCES tag(id));
+
+CREATE TABLE post_tag (project int NOT NULL REFERENCES post(id), tag int NOT NULL REFERENCES tag(id));
