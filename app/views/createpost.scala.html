@@ -1,0 +1,20 @@
+@(user: Option[models.User])(message: Option[String])
+
+@import helper._
+
+@main("Jeremy Owens") {
+  @header(user)
+
+  <div class="row">
+    <form>
+      <input type="text">
+      <select>
+        <option>1</option>
+      </select>
+      <textarea></textarea>
+      <button type="submit" class="btn btn-standard"></button>
+    </form>
+
+  </div>
+  @footer()
+}
