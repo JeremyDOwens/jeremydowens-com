@@ -44,11 +44,13 @@
          </div>
          <div class="col-md-4">
            <h2>Create a new account</h2>
-           <label for="create_acct_uname">Username</label>
-           <input type="text" id="create_acct_uname"> <br />
-           <label for="create_acct_email">Email</label>
-           <input type="text" id="create_acct_email"><br />
-           <button id="acctcreate" class="btn btn-standard">Create Account</button>
+           <form id="acctcreate">
+             <label for="create_acct_uname">Username</label>
+             <input type="text" id="create_acct_uname"> <br />
+             <label for="create_acct_email">Email</label>
+             <input type="text" id="create_acct_email"><br />
+             <button type="submit" class="btn btn-standard">Create Account</button>
+           </form>
          <img src="@routes.Assets.versioned("images/spinner.gif")" id="create_spinner" class="spinner" style="display: none;"><br />
            <p id="resultmessage"></p>
            <p><a href="/pwchange">Forgot Password?</a></p>

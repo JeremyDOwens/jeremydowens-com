@@ -120,7 +120,8 @@
     });
 
     $(document).ready(function () {
-        $('#acctcreate').on('click', function () {
+        $('#acctcreate').on('submit', function (e) {
+            e.preventDefault();
             $('#create_spinner').show();
             createUser().then(() => {
                 $('.spinner').hide();
@@ -133,13 +134,15 @@
                 $('.spinner').hide();
             });
         });
-        $('#get_new_password').on('click', function () {
+        $('#get_new_password').on('submit', function (e) {
+            e.preventDefault();
             $('#recover_spinner').show();
             recoverPassword().then(() => {
                 $('.spinner').hide();
             });
         });
-        $('#change_password').on('click', function () {
+        $('#change_password').on('submit', function (e) {
+            e.preventDefault();
             $('#change_spinner').show();
             changePassword().then(() => {
                 $('.spinner').hide();
