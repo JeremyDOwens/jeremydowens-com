@@ -18,3 +18,5 @@ GET     /activate/:code             controllers.Auth.activate(code:String)
 GET     /pwchange                   controllers.Auth.pwChangePage
 POST    /getnewpassword             controllers.Auth.getNewPassword
 POST    /changepassword             controllers.Auth.changePassword
+
+GET     /post/createpost            controllers.Content.createPostPage
