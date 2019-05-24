@@ -25,7 +25,7 @@ trait Secured extends AbstractController {
 
   def username(request: RequestHeader) = request.session.get("username")
 
-  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.Auth.login())
+  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.Auth.login(None)(Some("You are not authorized to view that page.")))
 
 
   /*

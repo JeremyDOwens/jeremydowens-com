@@ -126,7 +126,7 @@
                 $('.spinner').hide();
             });
         });
-        $('#acctlogin').on('click', function () {
+        $('#acctlogin').on('submit', function () {
             $('#login_spinner').show();
             authUser().then(() => {
                 $('.spinner').hide();
