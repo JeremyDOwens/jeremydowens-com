@@ -19,4 +19,17 @@ GET     /pwchange                   controllers.Auth.pwChangePage
 POST    /getnewpassword             controllers.Auth.getNewPassword
 POST    /changepassword             controllers.Auth.changePassword
 
-GET     /post/createpost            controllers.Content.createPostPage
+#Pages for content management
+#prefer simple id# in url for top level public content, prefer parameters for limiting results
+
+GET     /post/create                controllers.Content.createPostPage
+GET     /post/:id                   controllers.Content.viewPostPage(id: Int)
+GET     /project/create             controllers.Content.createProjectPage
+GET     /project/:id                controllers.Content.viewProjectPage(id: Int)
+
+#Json for content management
+#prefer url parameters for item selection, json body for details
+POST    /post/new                   controllers.Content.newPost
+POST    /post/edit                  controllers.Content.editPost(id: Int)
+POST    /project/new                controllers.Content.newProject
+POST    /project/edit               controllers.Content.editProject(id: Int)
